@@ -36,11 +36,11 @@ def Delete_duplicates (dataframe):
     :param email: dataframe with all the information
     return Dataframe without any duplicate
     """
-    df = dataframe.sort_values('properties.createdate', ascending=False).groupby('Name', as_index=False).first()
-    df2 = dataframe.sort_values('properties.createdate', ascending=False).groupby('Name')['properties.industry'].apply(lambda x: ';'.join(x)).reset_index()
+    df = dataframe.sort_values('properties.technical_test___create_date', ascending=False).groupby('Name', as_index=False).first()
+    df2 = dataframe.sort_values('properties.technical_test___create_date', ascending=False).groupby('Name')['properties.industry'].apply(lambda x: ';'.join(x)).reset_index()
     df3 = pd.merge(df,df2, left_on = 'Name', right_on = 'Name', how = 'inner')
-    df = df3.sort_values('properties.createdate', ascending=False).groupby('Email', as_index=False).first()
-    df2 = df3.sort_values('properties.createdate', ascending=False).groupby('Email')['properties.industry_y'].apply(lambda x: ';'.join(x)).reset_index()
+    df = df3.sort_values('properties.technical_test___create_date', ascending=False).groupby('Email', as_index=False).first()
+    df2 = df3.sort_values('properties.technical_test___create_date', ascending=False).groupby('Email')['properties.industry_y'].apply(lambda x: ';'.join(x)).reset_index()
     for i in range(len(df2)):
         if df2.loc[i, 'properties.industry_y'] != None:
             sin_comas = df2.loc[i, 'properties.industry_y'].split(";")
@@ -73,7 +73,7 @@ def get_phone_number (dataframe):
     dataframe_1 = pd.merge(dataframe,prefijo, left_on = 'Country', right_on = 'ENGLISH', how = 'inner')
     dataframe_1["Phone"] = dataframe_1[["PHONE_CODE", "Phone_1"]].apply(lambda x: ") ".join(x), axis =1)
     dataframe_1['Phone'] = '(+' + dataframe_1['Phone'].astype(str)
-    return dataframe_1[["id", "Name", "Email", "Country", "City", "Industry", "Phone", "properties.technical_test___create_date", "properties.hs_object_id"]]
+    return dataframe_1[["Email", "Country", "City", "Industry", "Phone", "properties.technical_test___create_date", "properties.hs_object_id"]]
 
 
 
