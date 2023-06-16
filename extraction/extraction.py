@@ -12,7 +12,7 @@ def extract(url, number_extraction):
     """
     after = 100*number_extraction
     payload = json.dumps({
-    "properties": ["country","phone","technical_test___create_date","industry","address","hs_object_id","allowed_to_collect","raw_email"],
+    "properties": ["country","phone","technical_test___create_date","industry","address","hs_object_id","allowed_to_collect","raw_email","firstname", "lastname"],
     "limit": 100,
     "after": str(after),
     "filterGroups": [
