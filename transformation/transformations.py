@@ -27,8 +27,7 @@ def exctract_email (email):
     return Tuble with the name and the email 
     """
     new_email = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', email)
-    name = re.search(r'[\w]+[^ ]', email)
-    return [new_email.group(0), name.group(0)]
+    return new_email.group(0)
 
 def Delete_duplicates (dataframe):
     """
@@ -36,26 +35,34 @@ def Delete_duplicates (dataframe):
     :param email: dataframe with all the information
     return Dataframe without any duplicate
     """
-    df = dataframe.sort_values('properties.technical_test___create_date', ascending=False).groupby('Name', as_index=False).first()
-    df2 = dataframe.sort_values('properties.technical_test___create_date', ascending=False).groupby('Name')['properties.industry'].apply(lambda x: ';'.join(x)).reset_index()
-    df3 = pd.merge(df,df2, left_on = 'Name', right_on = 'Name', how = 'inner')
-    df = df3.sort_values('properties.technical_test___create_date', ascending=False).groupby('Email', as_index=False).first()
-    df2 = df3.sort_values('properties.technical_test___create_date', ascending=False).groupby('Email')['properties.industry_y'].apply(lambda x: ';'.join(x)).reset_index()
-    for i in range(len(df2)):
-        if df2.loc[i, 'properties.industry_y'] != None:
-            sin_comas = df2.loc[i, 'properties.industry_y'].split(";")
-            df2.loc[i, "Industry"] = ';'.join(set(sin_comas))
+    dataframe["Name"] = dataframe["properties.firstname"] + " " + dataframe["properties.lastname"]
+    email_df = dataframe[dataframe["Email"] != ""].sort_values('properties.createdate', ascending=False).groupby('Email', as_index=False).first()
+    email_industry_df = dataframe[dataframe["Email"] != ""].sort_values('properties.createdate', ascending=False).groupby('Email')['properties.industry'].apply(lambda x: ';'.join(x)).reset_index()
+    full_email_df = pd.merge(email_df,email_industry_df, left_on = 'Email', right_on = 'Email', how = 'inner')
+    full_email_df = full_email_df[["id", "Name", "Email", "properties.country", "properties.phone", "properties.address","properties.industry_y", "properties.technical_test___create_date", "properties.hs_object_id", 'properties.createdate']]
+    name_df = dataframe[dataframe["Email"] == ""].sort_values('properties.createdate', ascending=False).groupby('Name', as_index=False).first()
+    name_industry_df = dataframe[dataframe["Email"] == ""].sort_values('properties.createdate', ascending=False).groupby('Name')['properties.industry'].apply(lambda x: ';'.join(x)).reset_index()
+    full_name_df = pd.merge(name_df,name_industry_df, left_on = 'Name', right_on = 'Name', how = 'inner')
+    full_name_df = full_name_df[["id", "Name", "Email", "properties.country", "properties.phone", "properties.address", "properties.industry_y", "properties.technical_test___create_date", "properties.hs_object_id", 'properties.createdate']]
+    final_df = pd.concat([full_email_df, full_name_df])
+    final_df["Email"] = final_df["Email"].replace('', None)
+    final1_df = final_df.sort_values('properties.createdate', ascending=False).groupby('Name', as_index=False).first()
+    final2_df = final_df.sort_values('properties.createdate', ascending=False).groupby('Name')['properties.industry_y'].apply(lambda x: ';'.join(x)).reset_index()
+    full_final_df = pd.merge(final1_df,final2_df, left_on = 'Name', right_on = 'Name', how = 'inner')
+    for i in range(len(full_final_df)):
+        if full_final_df.loc[i, 'properties.industry_y_y'] != None:
+            sin_comas = full_final_df.loc[i, 'properties.industry_y_y'].split(";")
+            full_final_df.loc[i, "Industry"] = ';'.join(set(sin_comas))
         else:
-            df2.loc[i, "Industry"] = ""
-    df3 = pd.merge(df,df2, left_on = 'Email', right_on = 'Email', how = 'inner')
-    for i in range(len(df3)):
-        if df3.loc[i, 'Industry'] != None and len(df3.loc[i, 'Industry'].split(";")) > 1:
-            df3.loc[i, 'Industry'] =';' + df3.loc[i, 'Industry']
-        elif df3.loc[i, 'Industry'] == None:
-             df3.loc[i, 'Industry'] = ""
+            full_final_df.loc[i, "Industry"] = ""
+    for i in range(len(full_final_df)):
+        if full_final_df.loc[i, 'Industry'] != None and len(full_final_df.loc[i, 'Industry'].split(";")) > 1:
+            full_final_df.loc[i, 'Industry'] =';' + full_final_df.loc[i, 'Industry']
+        elif full_final_df.loc[i, 'Industry'] == None:
+             full_final_df.loc[i, 'Industry'] = ""
         else:
-            df3.loc[i, "Industry"] = df3.loc[i, "Industry"]
-    return df3[["id", "Name", "Email", "properties.country", "properties.phone", "Industry", "properties.technical_test___create_date", "properties.hs_object_id"]]
+            full_final_df.loc[i, "Industry"] = full_final_df.loc[i, "Industry"]
+    return full_final_df[["id", "Name", "Email", "properties.country", "properties.phone", "properties.address", "Industry", "properties.technical_test___create_date", "properties.hs_object_id",'properties.createdate']]
 
 def get_phone_number (dataframe):
     """
